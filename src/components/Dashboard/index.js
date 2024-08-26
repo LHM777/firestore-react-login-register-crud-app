@@ -19,8 +19,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
 
   const getEmployees = async () => {
 
+    // Prevent the function from running multiple times due to React Strict Mode or re-renders.
+    // fetchRef is used as a flag to ensure that the data fetching only occurs once.
     if (fetchRef.current) return;  // Prevents the second fetch
-    fetchRef.current = true;
+    fetchRef.current = true; // Mark the fetch as done
 
     const querySnapshot = await getDocs(collection(db, "employees"));
     const employees = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
