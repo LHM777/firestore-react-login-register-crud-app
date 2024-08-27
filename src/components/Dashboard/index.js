@@ -19,7 +19,21 @@ const Dashboard = ({ setIsAuthenticated }) => {
 
   const getEmployees = async () => {
 
-  
+    /*
+      Removed fetchRef logic to allow multiple calls to getEmployees.
+
+      Originally, fetchRef was used to prevent multiple fetches caused by 
+      React Strict Mode's intentional double rendering during development. 
+      However, in the current setup, React Strict Mode does not seem to 
+      be causing double rendering, so the fetchRef logic was no longer 
+      necessary. 
+
+      Removing fetchRef ensures that getEmployees can be called 
+      whenever necessary (e.g., after adding or updating an employee), 
+      allowing the latest data to be rendered on the frontend.
+      
+    */
+
     const querySnapshot = await getDocs(collection(db, "employees"));
     const employees = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
     setEmployees(employees)
