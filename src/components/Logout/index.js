@@ -1,7 +1,9 @@
 import React from 'react';
 import Swal from 'sweetalert2';
+import { getAuth, signOut } from "firebase/auth";
 
 const Logout = ({ setIsAuthenticated }) => {
+
   const handleLogout = () => {
     Swal.fire({
       icon: 'question',
@@ -11,16 +13,26 @@ const Logout = ({ setIsAuthenticated }) => {
       confirmButtonText: 'Yes',
     }).then(result => {
       if (result.value) {
-        Swal.fire({
-          timer: 1500,
-          showConfirmButton: false,
-          willOpen: () => {
-            Swal.showLoading();
-          },
-          willClose: () => {
-            localStorage.setItem('is_authenticated', false);
-            setIsAuthenticated(false);
-          },
+        const auth = getAuth();
+        signOut(auth).then(() => {
+          Swal.fire({
+            timer: 1500,
+            showConfirmButton: false,
+            willOpen: () => {
+              Swal.showLoading();
+            },
+            willClose: () => {
+              setIsAuthenticated(false);
+            },
+          });
+        }).catch((error) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Failed to log out. Please try again.',
+            showConfirmButton: true,
+          });
+          console.log(error);
         });
       }
     });

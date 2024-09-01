@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { doc, setDoc } from "firebase/firestore"; 
+import { getDb } from '../../config/firestore'
 
 const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing }) => {
   const id = selectedEmployee.id;
@@ -10,7 +12,7 @@ const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing }) => {
   const [salary, setSalary] = useState(selectedEmployee.salary);
   const [date, setDate] = useState(selectedEmployee.date);
 
-  const handleUpdate = e => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
 
     if (!firstName || !lastName || !email || !salary || !date) {
@@ -31,18 +33,28 @@ const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing }) => {
       date,
     };
 
-    // TODO: Update document
-
-    setEmployees(employees);
-    setIsEditing(false);
-
-    Swal.fire({
-      icon: 'success',
-      title: 'Updated!',
-      text: `${employee.firstName} ${employee.lastName}'s data has been updated.`,
-      showConfirmButton: false,
-      timer: 1500,
-    });
+    try {
+      const db = await getDb();
+      await setDoc(doc(db, "employees", id), employee);
+      
+      setEmployees(employees.map((emp) => (emp.id === id ? employee : emp)));
+      setIsEditing(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: `${employee.firstName} ${employee.lastName}'s data has been updated.`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to update employee.',
+        showConfirmButton: true,
+      });
+    }
   };
 
   return (

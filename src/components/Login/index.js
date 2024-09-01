@@ -1,64 +1,48 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getDb } from '../../config/firestore';
 
-const Login = ({ setIsAuthenticated }) => {
-  const adminEmail = 'admin@example.com';
-  const adminPassword = 'qwerty';
+const Login = ({ setIsAuthenticated, setIsRegistering }) => {
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("mypassword");
 
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('qwerty');
-
-  const handleLogin = e => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (email === adminEmail && password === adminPassword) {
+    try {
+      // Initialize Firebase and get Firestore instance
+      await getDb();
+      
+      const auth = getAuth();
+      await signInWithEmailAndPassword(auth, email, password);
+      setIsAuthenticated(true);
       Swal.fire({
-        timer: 1500,
+        icon: 'success',
+        title: 'Successfully logged in!',
         showConfirmButton: false,
-        willOpen: () => {
-          Swal.showLoading();
-        },
-        willClose: () => {
-          localStorage.setItem('is_authenticated', true);
-          setIsAuthenticated(true);
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Successfully logged in!',
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        },
+        timer: 1500,
       });
-    } else {
+    } catch (error) {
+      console.error("Login error:", error);
       Swal.fire({
-        timer: 1500,
-        showConfirmButton: false,
-        willOpen: () => {
-          Swal.showLoading();
-        },
-        willClose: () => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'Incorrect email or password.',
-            showConfirmButton: true,
-          });
-        },
+        icon: 'error',
+        title: 'Error!',
+        text: 'Incorrect email or password.',
+        showConfirmButton: true,
       });
     }
   };
 
   return (
     <div className="small-container">
+      <h1>Admin Login</h1>
       <form onSubmit={handleLogin}>
-        <h1>Admin Login</h1>
         <label htmlFor="email">Email</label>
         <input
           id="email"
           type="email"
           name="email"
-          placeholder="admin@example.com"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
@@ -67,12 +51,17 @@ const Login = ({ setIsAuthenticated }) => {
           id="password"
           type="password"
           name="password"
-          placeholder="qwerty"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={e => setPassword(e.value)}
         />
-        <input style={{ marginTop: '12px' }} type="submit" value="Login" />
+        <div className="button-group">
+          <button type="button" onClick={handleLogin} className="button">Login</button>
+          <button type="button" onClick={() => setIsRegistering(true)} className="button muted-button">Register</button>
+        </div>
       </form>
+      <p style={{ marginTop: '10px', textAlign: 'center' }}>
+        Use these demo credentials to log in and explore the app.
+      </p>
     </div>
   );
 };
