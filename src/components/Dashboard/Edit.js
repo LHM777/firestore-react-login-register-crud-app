@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { doc, setDoc } from "firebase/firestore"; 
-import { db } from '../../config/firestore'
+import { getDb } from '../../config/firestore'
 
-const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing, getEmployees }) => {
+const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing }) => {
   const id = selectedEmployee.id;
 
   const [firstName, setFirstName] = useState(selectedEmployee.firstName);
@@ -33,22 +33,28 @@ const Edit = ({ employees, selectedEmployee, setEmployees, setIsEditing, getEmpl
       date,
     };
 
-    await setDoc(doc(db, "employees", id), {
-        ...employee
-    });
-
-    setEmployees(employees);
-    setIsEditing(false);
-    getEmployees()
-    
-
-    Swal.fire({
-      icon: 'success',
-      title: 'Updated!',
-      text: `${employee.firstName} ${employee.lastName}'s data has been updated.`,
-      showConfirmButton: false,
-      timer: 1500,
-    });
+    try {
+      const db = await getDb();
+      await setDoc(doc(db, "employees", id), employee);
+      
+      setEmployees(employees.map((emp) => (emp.id === id ? employee : emp)));
+      setIsEditing(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: `${employee.firstName} ${employee.lastName}'s data has been updated.`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to update employee.',
+        showConfirmButton: true,
+      });
+    }
   };
 
   return (

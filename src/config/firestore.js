@@ -1,15 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-let firebaseConfig = null;
+let db = null;
 
 const initializeFirebase = async () => {
-  if (!firebaseConfig) {
+  if (!db) {
     const response = await fetch('/api/getConfig');
-    firebaseConfig = await response.json();
+    const firebaseConfig = await response.json();
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
   }
-  const app = initializeApp(firebaseConfig);
-  return getFirestore(app);
+  return db;
 };
 
 export const getDb = async () => {

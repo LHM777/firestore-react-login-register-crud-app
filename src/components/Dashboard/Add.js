@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { collection, addDoc } from "firebase/firestore"; 
+import { getDb } from '../../config/firestore'
 
-import { addDoc, collection } from "firebase/firestore"; 
-import { db } from '../../config/firestore'
-
-const Add = ({ employees, setEmployees, setIsAdding, getEmployees }) => {
+const Add = ({ employees, setEmployees, setIsAdding }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [salary, setSalary] = useState('');
   const [date, setDate] = useState('');
 
-  const handleAdd = async (e)=> {
+  const handleAdd = async (e) => {
     e.preventDefault();
 
     if (!firstName || !lastName || !email || !salary || !date) {
@@ -31,13 +30,11 @@ const Add = ({ employees, setEmployees, setIsAdding, getEmployees }) => {
       date,
     };
 
-    employees.push(newEmployee);
-
     try {
-
-      // Add the new employee to Firestore and get the document reference
-      await addDoc(collection(db, "employees"), newEmployee);
-
+      const db = await getDb();
+      const docRef = await addDoc(collection(db, "employees"), newEmployee);
+      setEmployees([...employees, { id: docRef.id, ...newEmployee }]);
+      setIsAdding(false);
       Swal.fire({
         icon: 'success',
         title: 'Added!',
@@ -45,16 +42,15 @@ const Add = ({ employees, setEmployees, setIsAdding, getEmployees }) => {
         showConfirmButton: false,
         timer: 1500,
       });
-
-      setIsAdding(false);
-      getEmployees()
-
-      
-    } catch (e) {
-      console.error("Error adding document: ", e);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to add employee.',
+        showConfirmButton: true,
+      });
     }
-
-
   };
 
   return (

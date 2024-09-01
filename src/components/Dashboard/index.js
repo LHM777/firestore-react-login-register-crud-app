@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
 import Header from './Header';
@@ -7,7 +7,7 @@ import Add from './Add';
 import Edit from './Edit';
 
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
-import { db } from '../../config/firestore'
+import { getDb } from '../../config/firestore'
 
 const Dashboard = ({ setIsAuthenticated }) => {
   const [employees, setEmployees] = useState();
@@ -17,18 +17,20 @@ const Dashboard = ({ setIsAuthenticated }) => {
 
   const fetchRef = useRef(false);
 
-  const getEmployees = async () => {
-
-  
-    const querySnapshot = await getDocs(collection(db, "employees"));
-    const employees = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
-    setEmployees(employees)
-    
-  }
-
-
   useEffect(() => {
-    getEmployees()
+    const fetchData = async () => {
+      try {
+        const db = await getDb();
+        const employeesCol = collection(db, 'employees');
+        const snapshot = await getDocs(employeesCol);
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setEmployees(list);
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+        // Optionally, show an error message to the user
+      }
+    };
+    fetchData();
   }, []);
 
   const handleEdit = id => {
@@ -38,7 +40,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
     setIsEditing(true);
   };
 
-  const handleDelete = id => {
+  const handleDelete = async (id) => {
     Swal.fire({
       icon: 'warning',
       title: 'Are you sure?',
@@ -46,22 +48,32 @@ const Dashboard = ({ setIsAuthenticated }) => {
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'No, cancel!',
-    }).then(result => {
+    }).then(async (result) => {
       if (result.value) {
-        const [employee] = employees.filter(employee => employee.id === id);
+        try {
+          const db = await getDb();
+          await deleteDoc(doc(db, "employees", id));
 
-        deleteDoc(doc(db, "employees", id));
+          const [employee] = employees.filter(employee => employee.id === id);
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: `${employee.firstName} ${employee.lastName}'s data has been deleted.`,
+            showConfirmButton: false,
+            timer: 1500,
+          });
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: `${employee.firstName} ${employee.lastName}'s data has been deleted.`,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-
-        const employeesCopy = employees.filter(employee => employee.id !== id);
-        setEmployees(employeesCopy);
+          const employeesCopy = employees.filter(employee => employee.id !== id);
+          setEmployees(employeesCopy);
+        } catch (error) {
+          console.error("Error deleting document: ", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Failed to delete employee.',
+            showConfirmButton: true,
+          });
+        }
       }
     });
   };

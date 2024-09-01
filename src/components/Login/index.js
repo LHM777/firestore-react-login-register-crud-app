@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getDb } from '../../config/firestore';
 
 const Login = ({ setIsAuthenticated, setIsRegistering }) => {
   const [email, setEmail] = useState("admin@example.com");
@@ -9,9 +10,13 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const auth = getAuth();
     try {
+      // Initialize Firebase and get Firestore instance
+      await getDb();
+      
+      const auth = getAuth();
       await signInWithEmailAndPassword(auth, email, password);
+      setIsAuthenticated(true);
       Swal.fire({
         icon: 'success',
         title: 'Successfully logged in!',
@@ -19,6 +24,7 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
         timer: 1500,
       });
     } catch (error) {
+      console.error("Login error:", error);
       Swal.fire({
         icon: 'error',
         title: 'Error!',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getDb } from '../../config/firestore'; // Add this import
 
 const Register = ({ setIsRegistering, setIsAuthenticated }) => {
   const [email, setEmail] = useState("");
@@ -20,8 +21,9 @@ const Register = ({ setIsRegistering, setIsAuthenticated }) => {
       return;
     }
 
-    const auth = getAuth();
     try {
+      const db = await getDb(); // Initialize Firestore
+      const auth = getAuth();
       await createUserWithEmailAndPassword(auth, email, password);
       Swal.fire({
         icon: 'success',

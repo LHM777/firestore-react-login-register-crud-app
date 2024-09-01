@@ -1,6 +1,23 @@
 import React from 'react';
+import { doc, deleteDoc } from "firebase/firestore";
+import { getDb } from '../../config/firestore';
 
 const Table = ({ employees, handleEdit, handleDelete }) => {
+  const handleDeleteEmployee = async (id) => {
+    try {
+      const db = await getDb();
+      await deleteDoc(doc(db, "employees", id));
+      handleDelete(id);
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to delete employee.',
+        showConfirmButton: true
+      });
+    }
+  };
 
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -44,7 +61,7 @@ const Table = ({ employees, handleEdit, handleDelete }) => {
                 </td>
                 <td className="text-left">
                   <button
-                    onClick={() => handleDelete(employee.id)}
+                    onClick={() => handleDeleteEmployee(employee.id)}
                     className="button muted-button"
                   >
                     Delete
