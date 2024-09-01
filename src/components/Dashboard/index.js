@@ -8,7 +8,6 @@ import Edit from './Edit';
 
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { getDb } from '../../config/firestore'
- // Adjust the path as needed
 
 const Dashboard = ({ setIsAuthenticated }) => {
   const [employees, setEmployees] = useState();
@@ -16,7 +15,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const fetchRef = useRef(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +98,6 @@ const Dashboard = ({ setIsAuthenticated }) => {
           employees={employees}
           setEmployees={setEmployees}
           setIsAdding={setIsAdding}
-          getEmployees={getEmployees}
         />
       )}
       {isEditing && (
@@ -108,7 +106,6 @@ const Dashboard = ({ setIsAuthenticated }) => {
           selectedEmployee={selectedEmployee}
           setEmployees={setEmployees}
           setIsEditing={setIsEditing}
-          getEmployees={getEmployees}
         />
       )}
     </div>
