@@ -10,6 +10,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
 
+
+  
   useEffect(() => {
     const initializeFirebaseAndAuth = async () => {
       await getDb();  // Initialize Firebase
