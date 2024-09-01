@@ -8,6 +8,8 @@ import Edit from './Edit';
 
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { getDb } from '../../config/firestore'
+import { useRef } from 'react';
+import { getEmployees } from '../../services/firebase'; // Adjust the path as needed
 
 const Dashboard = ({ setIsAuthenticated }) => {
   const [employees, setEmployees] = useState();

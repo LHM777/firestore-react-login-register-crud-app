@@ -1,6 +1,7 @@
 import React from 'react';
 import { doc, deleteDoc } from "firebase/firestore";
 import { getDb } from '../../config/firestore';
+import Swal from 'sweetalert2';
 
 const Table = ({ employees, handleEdit, handleDelete }) => {
   const handleDeleteEmployee = async (id) => {
